@@ -1,6 +1,6 @@
 # ValidadorDoc 📄
 
-Um validador de documentos brasileiro (CPF e CNPJ) moderno, desenvolvido em **Java 25**. O projeto valida a estrutura matemática dos documentos e identifica a origem (UF) no caso de CPFs.
+Um validador de documentos brasileiro (CPF e CNPJ) moderno, desenvolvido em **Java 25**. O projeto valida a estrutura matemática dos documentos CNPJ numericos e novo padrão alfanumerioco e identifica a origem (UF) no caso de CPFs.
 
 ## ✨ Novidades da Versão (Java 25)
 
