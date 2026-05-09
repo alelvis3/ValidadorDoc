@@ -6,10 +6,6 @@ public class ValidadorPfPj {
 	private String formatar;
 	private String ufCpf;
 
-	public ValidadorPfPj(String cpfOrCnpj) {
-		this.cpfOrCnpj = cpfOrCnpj.replaceAll("\\D", "");
-	}
-
 	public String getTipo() {
 		return tipo;
 	}
@@ -17,33 +13,45 @@ public class ValidadorPfPj {
 	public String getFormatar() {
 		return formatar;
 	}
-	
+
 	public String getUfCpf() {
 		return ufCpf;
 	}
 
-	public boolean validar() {
-		if (cpfOrCnpj.length() == 11) {
-			return validarCPF(cpfOrCnpj);
-		} else if (cpfOrCnpj.length() == 14) {
-			return validarCNPJ(cpfOrCnpj);
-		} else {
-			return false;
-		}
+	public ValidadorPfPj(String cpfOrCnpj) {
+		this.cpfOrCnpj = cpfOrCnpj.replaceAll("[^a-zA-Z0-9]", "").toUpperCase();
 	}
 
-	private boolean validarCPF(String cpf) {
-		if (cpf.matches("(\\d)\\1{10}") || cpf.equals("12345678909")) {
-			return false;
+	public boolean validar() {
+		return switch (cpfOrCnpj.length()) {
+		case 11 -> validarCPF(cpfOrCnpj);
+		case 14 -> validarCNPJ(cpfOrCnpj);
+		default -> false;
+		};
+	}
+
+	private char calcularDigitoCNPJ(String num, int posicao) {
+		int soma = 0, peso = 2;
+		for (int i = posicao - 1; i >= 0; i--) {
+			int n = Character.getNumericValue(num.charAt(i));
+			soma += n * peso;
+			peso = (peso == 9) ? 2 : peso + 1;
 		}
+		int resto = soma % 11;
+		return (resto < 2) ? '0' : (char) ((11 - resto) + '0');
+	}
+
+	private boolean validarCNPJ(String cnpj) {
+		if (cnpj.matches("(\\w)\\1{13}"))
+			return false;
+		
 		try {
-			char dig10 = calcularDigito(cpf, 10, 9);
-			char dig11 = calcularDigito(cpf, 11, 10);
-			if (dig10 == cpf.charAt(9) && dig11 == cpf.charAt(10)) {
-				tipo = "CPF";
-				formatar = cpf.replaceAll("(\\d{3})(\\d{3})(\\d{3})(\\d{2})", "$1.$2.$3-$4");
-				char uf = cpf.charAt(8);
-				ufCpf = identificadorUf(uf);
+			char dig13 = calcularDigitoCNPJ(cnpj, 12);
+			char dig14 = calcularDigitoCNPJ(cnpj, 13);
+			if (dig13 == cnpj.charAt(12) && dig14 == cnpj.charAt(13)) {
+				tipo = "CNPJ";
+				formatar = cnpj.replaceAll("([A-Z0-9]{2})([A-Z0-9]{3})([A-Z0-9]{3})([A-Z0-9]{4})(\\d{2})",
+						"$1.$2.$3/$4-$5");
 				return true;
 			}
 		} catch (Exception e) {
@@ -52,16 +60,17 @@ public class ValidadorPfPj {
 		return false;
 	}
 
-	private boolean validarCNPJ(String cnpj) {
-		if (cnpj.matches("(\\d)\\1{13}") || cnpj.equals("11222333000181")) {
+	private boolean validarCPF(String cpf) {
+		if (cpf.matches("(\\d)\\1{10}") || cpf.equals("12345678909"))
 			return false;
-		}
+
 		try {
-			char dig13 = calcularDigitoCNPJ(cnpj, 12);
-			char dig14 = calcularDigitoCNPJ(cnpj, 13);
-			if (dig13 == cnpj.charAt(12) && dig14 == cnpj.charAt(13)) {
-				tipo = "CNPJ";
-				formatar = cnpj.replaceAll("(\\d{2})(\\d{3})(\\d{3})(\\d{4})(\\d{2})", "$1.$2.$3/$4-$5");
+			char dig10 = calcularDigito(cpf, 10, 9);
+			char dig11 = calcularDigito(cpf, 11, 10);
+			if (dig10 == cpf.charAt(9) && dig11 == cpf.charAt(10)) {
+				tipo = "CPF";
+				formatar = cpf.replaceAll("(\\d{3})(\\d{3})(\\d{3})(\\d{2})", "$1.$2.$3-$4");
+				ufCpf = identificadorUf(cpf.charAt(8));
 				return true;
 			}
 		} catch (Exception e) {
@@ -71,54 +80,27 @@ public class ValidadorPfPj {
 	}
 
 	private char calcularDigito(String num, int pesoInicial, int posicao) {
-		int soma = 0;
-		int peso = pesoInicial;
+		int soma = 0, peso = pesoInicial;
 		for (int i = 0; i < posicao; i++) {
-			int n = num.charAt(i) - '0';
-			soma += n * peso--;
+			soma += (num.charAt(i) - '0') * peso--;
 		}
 		int resto = 11 - (soma % 11);
-		return (resto == 10 || resto == 11) ? '0' : (char) (resto + '0');
+		return (resto >= 10) ? '0' : (char) (resto + '0');
 	}
 
-	private char calcularDigitoCNPJ(String num, int posicao) {
-		int soma = 0;
-		int peso = 2;
-		for (int i = posicao - 1; i >= 0; i--) {
-			int n = num.charAt(i) - '0';
-			soma += n * peso;
-			peso = (peso == 9) ? 2 : peso + 1;
-		}
-		int resto = soma % 11;
-		return (resto < 2) ? '0' : (char) ((11 - resto) + '0');
+	private String identificadorUf(char digito) {
+		return switch (digito) {
+		case '1' -> "DF, GO, MS, MT e TO";
+		case '2' -> "PA, AM, AC, AP, RO e RR";
+		case '3' -> "CE, MA e PI";
+		case '4' -> "PE, RN, PB e AL";
+		case '5' -> "BA e SE";
+		case '6' -> "MG";
+		case '7' -> "RJ e ES";
+		case '8' -> "SP";
+		case '9' -> "PR e SC";
+		case '0' -> "RS";
+		default -> "UF Desconhecida";
+		};
 	}
-
-	private String identificadorUf(char cpf) {
-		switch (cpf) {
-		case '1':
-			return "Distrito Federal, Goiás, Mato Grosso do Sul e Tocantins";
-		case '2':
-			return "Pará, Amazonas, Acre, Amapá, Rondônia e Roraima";
-		case '3':
-			return "Ceará, Maranhão e Piauí";
-		case '4':
-			return "Pernambuco, Rio Grande do Norte, Paraíba e Alagoas";
-		case '5':
-			return "Bahia e Sergipe";
-		case '6':
-			return "Minas Gerais";
-		case '7':
-			return "Rio de Janeiro e Espírito Santo";
-		case '8':
-			return "São Paulo";
-		case '9':
-			return "Paraná e Santa Catarina";
-		case '0':
-			return "Rio Grande do Sul";
-		default:
-			return null;
-		}
-	}
-
-
 }

@@ -12,90 +12,63 @@ import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
 public class PrncipalView extends JFrame {
+    /**
+	 * 
+	 */
 	private static final long serialVersionUID = 1L;
-	private JPanel contentPane;
-	public JTextField txtDoc;
-	public JTextField txtNumeroFormatado;
-	public JLabel lblSt;
-	public JLabel lblEstado;
+	
+	public JTextField txtDoc, txtNumeroFormatado;
+    public JLabel lblSt, lblEstado;
 
-	public PrncipalView() {
-		setTitle("Validador de CPF ou CNPJ");
-		setResizable(false);
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 447, 220);
-		contentPane = new JPanel();
-		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
-		setContentPane(contentPane);
-		contentPane.setLayout(null);
+    public PrncipalView() {
+        setTitle("Validador de CPF ou CNPJ - Java 25");
+        setResizable(false);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setBounds(100, 100, 450, 250);
+        
+        JPanel contentPane = new JPanel(null);
+        contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+        setContentPane(contentPane);
 
-		JLabel lblNumeroDoc = new JLabel("Digite o CPF ou CNPJ: ");
-		lblNumeroDoc.setHorizontalAlignment(SwingConstants.RIGHT);
-		lblNumeroDoc.setBounds(10, 15, 224, 14);
-		contentPane.add(lblNumeroDoc);
+        JLabel lblNumeroDoc = new JLabel("Digite CPF ou CNPJ:");
+        lblNumeroDoc.setBounds(10, 15, 150, 14);
+        contentPane.add(lblNumeroDoc);
 
-		txtDoc = new JTextField();
-		txtDoc.setBounds(255, 12, 166, 20);
-		contentPane.add(txtDoc);
-		txtDoc.setColumns(20);
+        txtDoc = new JTextField();
+        txtDoc.setBounds(160, 12, 260, 20);
+        contentPane.add(txtDoc);
 
-		JButton btnNewButton = new JButton("Validar documento");
-		btnNewButton.setBounds(255, 40, 166, 23);
-		contentPane.add(btnNewButton);
+        JButton btnValidar = new JButton("Validar");
+        btnValidar.setBounds(160, 40, 260, 30);
+        contentPane.add(btnValidar);
 
-		JLabel lblValidaDoc = new JLabel("Status");
-		lblValidaDoc.setHorizontalAlignment(SwingConstants.RIGHT);
-		lblValidaDoc.setBounds(10, 40, 45, 23);
-		contentPane.add(lblValidaDoc);
+        lblSt = new JLabel("Status", SwingConstants.CENTER);
+        lblSt.setBounds(10, 80, 410, 23);
+        contentPane.add(lblSt);
 
-		txtNumeroFormatado = new JTextField();
-		txtNumeroFormatado.setHorizontalAlignment(SwingConstants.CENTER);
-		txtNumeroFormatado.setEditable(false);
-		txtNumeroFormatado.setBounds(123, 109, 166, 20);
-		contentPane.add(txtNumeroFormatado);
-		txtNumeroFormatado.setColumns(10);
+        txtNumeroFormatado = new JTextField();
+        txtNumeroFormatado.setEditable(false);
+        txtNumeroFormatado.setHorizontalAlignment(SwingConstants.CENTER);
+        txtNumeroFormatado.setBounds(120, 110, 200, 25);
+        contentPane.add(txtNumeroFormatado);
 
-		lblSt = new JLabel("");
-		lblSt.setHorizontalAlignment(SwingConstants.CENTER);
-		lblSt.setBounds(74, 40, 184, 23);
-		contentPane.add(lblSt);
+        lblEstado = new JLabel("", SwingConstants.CENTER);
+        lblEstado.setFont(new Font("SansSerif", Font.BOLD, 12));
+        lblEstado.setBounds(10, 150, 410, 30);
+        contentPane.add(lblEstado);
 
-		JLabel lblTipo = new JLabel("");
-		lblTipo.setHorizontalAlignment(SwingConstants.LEFT);
-		lblTipo.setBounds(10, 106, 108, 23);
-		contentPane.add(lblTipo);
+        PrncipalController controller = new PrncipalController(this);
 
-		JLabel lblNumeroFormatado = new JLabel("Numero Formatado");
-		lblNumeroFormatado.setHorizontalAlignment(SwingConstants.CENTER);
-		lblNumeroFormatado.setBounds(123, 74, 166, 23);
-		contentPane.add(lblNumeroFormatado);
+        btnValidar.addActionListener(e -> {
+            if (txtDoc.getText().isBlank()) {
+                lblSt.setText("Campo vazio!");
+            } else {
+                controller.validarDocumento();
+            }
+        });
+    }
 
-		lblEstado = new JLabel("");
-		lblEstado.setFont(new Font("Tahoma", Font.PLAIN, 15));
-		lblEstado.setHorizontalAlignment(SwingConstants.CENTER);
-		lblEstado.setBounds(10, 140, 411, 30);
-		contentPane.add(lblEstado);
-
-		// Controller initialization
-		new PrncipalController(this);
-
-		btnNewButton.addActionListener(e -> {
-			if (txtDoc.getText().isEmpty()) {
-				lblSt.setText("Por favor, insira um CPF ou CNPJ");
-			} else {
-				new PrncipalController(this).validarDocumento();
-			}
-		});
-	}
-
-	public static void main(String[] args) {
-		EventQueue.invokeLater(() -> {
-			try {
-				PrncipalView frame = new PrncipalView();
-				frame.setVisible(true);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		});
-	}
+    public static void main(String[] args) {
+        EventQueue.invokeLater(() -> new PrncipalView().setVisible(true));
+    }
 }
