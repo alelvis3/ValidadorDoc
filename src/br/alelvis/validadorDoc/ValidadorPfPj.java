@@ -30,34 +30,40 @@ public class ValidadorPfPj {
 		};
 	}
 
-	private char calcularDigitoCNPJ(String num, int posicao) {
-		int soma = 0, peso = 2;
-		for (int i = posicao - 1; i >= 0; i--) {
-			int n = Character.getNumericValue(num.charAt(i));
-			soma += n * peso;
-			peso = (peso == 9) ? 2 : peso + 1;
-		}
-		int resto = soma % 11;
-		return (resto < 2) ? '0' : (char) ((11 - resto) + '0');
+	private char calcularDigitoCNPJ(String num, int[] pesos) {
+	    int soma = 0;
+	    for (int i = 0; i < pesos.length; i++) {
+	        // REGRA OFICIAL: Valor ASCII do caractere - 48
+	        int valorCalculo = num.charAt(i) - 48; 
+	        soma += valorCalculo * pesos[i];
+	    }
+	    int resto = soma % 11;
+	    return (resto < 2) ? '0' : (char) ((11 - resto) + '0');
 	}
 
 	private boolean validarCNPJ(String cnpj) {
-		if (cnpj.matches("(\\w)\\1{13}"))
-			return false;
-		
-		try {
-			char dig13 = calcularDigitoCNPJ(cnpj, 12);
-			char dig14 = calcularDigitoCNPJ(cnpj, 13);
-			if (dig13 == cnpj.charAt(12) && dig14 == cnpj.charAt(13)) {
-				tipo = "CNPJ";
-				formatar = cnpj.replaceAll("([A-Z0-9]{2})([A-Z0-9]{3})([A-Z0-9]{3})([A-Z0-9]{4})(\\d{2})",
-						"$1.$2.$3/$4-$5");
-				return true;
-			}
-		} catch (Exception e) {
-			return false;
-		}
-		return false;
+	    // Mantém a regra de 14 dígitos alfanuméricos
+	    if (cnpj.length() != 14 || cnpj.matches("(\\w)\\1{13}")) return false;
+
+	    try {
+	        // Pesos oficiais permanecem os mesmos
+	        int[] pesosDig1 = {5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2};
+	        int[] pesosDig2 = {6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2};
+
+	        char dig13 = calcularDigitoCNPJ(cnpj, pesosDig1);
+	        char dig14 = calcularDigitoCNPJ(cnpj, pesosDig2);
+
+	        if (dig13 == cnpj.charAt(12) && dig14 == cnpj.charAt(13)) {
+	            this.tipo = "CNPJ";
+	            // Máscara atualizada para aceitar letras nas primeiras 12 posições
+	            this.formatar = cnpj.replaceAll("([A-Z0-9]{2})([A-Z0-9]{3})([A-Z0-9]{3})([A-Z0-9]{4})(\\d{2})",
+	                    "$1.$2.$3/$4-$5");
+	            return true;
+	        }
+	    } catch (Exception e) {
+	        return false;
+	    }
+	    return false;
 	}
 
 	private boolean validarCPF(String cpf) {
