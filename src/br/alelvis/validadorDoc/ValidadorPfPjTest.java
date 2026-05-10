@@ -41,6 +41,19 @@ class ValidadorPfPjTest {
         assertTrue(validador.validar(), "CPF deveria ser válido");
         assertEquals("CPF", validador.getTipo());
     }
+	
+	@ParameterizedTest
+	@DisplayName("Deve rejeitar CNPJs inválidos do arquivo")
+	@MethodSource("provedorDeCnpjsInvalidos")
+	void deveRejeitarCnpjsInvalidos(String cnpjInvalido) {
+	    ValidadorPfPj validador = new ValidadorPfPj(cnpjInvalido);
+	    assertFalse(validador.validar(), "CNPJ " + cnpjInvalido + " NÃO deveria ser válido");
+	}
+
+	static Stream<String> provedorDeCnpjsInvalidos() throws IOException {
+	    return Files.lines(Paths.get("src/test/resources/cnpjs_invalidos.txt"))
+	                .filter(linha -> !linha.isBlank());
+	}
 
     @Test
     @DisplayName("Deve validar CNPJ Alfanumérico (Novo Padrão)")
