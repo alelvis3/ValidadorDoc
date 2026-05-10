@@ -14,6 +14,7 @@ import org.junit.jupiter.api.DisplayName;
 
 class ValidadorPfPjTest {
 	
+	private String cpfTeste = "51305647823";
 	
     // Este método lê o arquivo e entrega linha por linha para o teste acima
     static Stream<String> provedorDeCnpjs() throws IOException {
@@ -21,6 +22,8 @@ class ValidadorPfPjTest {
         return Files.lines(Paths.get("src/test/resources/cnpjs.txt"))
                     .filter(linha -> !linha.isBlank()); // Pula linhas vazias
     }
+
+	
     
     @ParameterizedTest
     @DisplayName("Deve validar CNPJs a partir de um arquivo TXT")
@@ -36,7 +39,7 @@ class ValidadorPfPjTest {
     @DisplayName("Deve validar um CPF numérico comum")
     void deveValidarCPFComum() {
         // Exemplo de CPF válido (substitua por um real se necessário)
-        ValidadorPfPj validador = new ValidadorPfPj("342.518.678-74"); 
+        ValidadorPfPj validador = new ValidadorPfPj(cpfTeste ); 
         // Nota: O switch do seu código retornará true se o cálculo do dígito bater
         assertTrue(validador.validar(), "CPF deveria ser válido");
         assertEquals("CPF", validador.getTipo());
@@ -74,7 +77,7 @@ class ValidadorPfPjTest {
     @DisplayName("Deve identificar a UF correta pelo dígito do CPF")
     void deveIdentificarUfCpf() {
         // O dígito 8 no CPF 000.000.008-00 indica São Paulo na sua lógica
-        ValidadorPfPj validador = new ValidadorPfPj("12345678805"); 
+        ValidadorPfPj validador = new ValidadorPfPj(cpfTeste); 
         if (validador.validar()) {
             assertEquals("SP", validador.getUfCpf());
         }
